@@ -7,8 +7,9 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper, 
+    Paper,
 } from '@material-ui/core';
+import TableData from './TableData.component'
 
 
 const useStyles = makeStyles({
@@ -17,8 +18,9 @@ const useStyles = makeStyles({
     },
 });
 
-const TableEmployee = () => {
+const TableEmployee = (props) => {
     const classes = useStyles();
+    const { data, setLoading } = props
 
     return (
         <TableContainer component={Paper}>
@@ -29,11 +31,13 @@ const TableEmployee = () => {
                     <TableCell align='center'>Name</TableCell>
                     <TableCell align='center'>Email</TableCell>
                     <TableCell align='center'>Mobile</TableCell>
-                    <TableCell align='center'>Actions</TableCell>
+                    <TableCell colSpan={3} align='center'>Actions</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
-            
+                {
+                    data.length > 0 ? data.map((item) => <TableData setLoading={setLoading} key={item.id} id={item.id} name={item.name} email={item.email} address={item.address} birthday={item.birthday} mobile={item.mobile}  />) : <TableRow><TableCell colSpan={7} align='center'>List is Empty</TableCell></TableRow>
+                }
             </TableBody>
         </Table>
         </TableContainer>

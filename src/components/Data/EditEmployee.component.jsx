@@ -13,21 +13,16 @@ import {
     SnackbarContent,
 } from '@material-ui/core'
 import { 
-    Add, 
     FaceRounded,
+    ContactMailRounded,
     PhoneRounded,
-    HomeWorkRounded,
-    AlternateEmailRounded,
     CalendarTodayRounded,
+    HomeWorkRounded,
+    AlternateEmailRounded, 
 } from '@material-ui/icons'
 import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
-    fabButton: {
-        position: 'relative',
-        left: '80%',
-        margin: 10,
-    },
     margin: {
         margin: theme.spacing(1),
     },
@@ -40,18 +35,18 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="down" ref={ref} {...props} />;
 })
 
-const AddEmployee = (props) => {
+const EditEmployee = (props) => {
+    const { person, setPerson, setLoading } = props
     const classes = useStyles()
     const [open, setOpen] = React.useState(false)
     const [snack, setSnack] = React.useState(false)
-    const { setLoading } = props
 
-    const [name, setName] = React.useState('')
-    const [phone, setPhone] = React.useState('')
-    const [birthday, setBirthday] = React.useState('')
-    const [address, setAddress] = React.useState('')
-    const [email, setEmail] = React.useState('')
-    const [error, setError] = React.useState('')
+    const [name, setName] = React.useState(person.name)
+    const id = person.id
+    const [phone, setPhone] = React.useState(person.mobile)
+    const [birthday, setBirthday] = React.useState(person.birthday)
+    const [email, setEmail] = React.useState(person.email)
+    const [address, setAddress] = React.useState(person.address)
 
     const handleNameChange = (e) => {
         setName(e.target.value)
@@ -68,7 +63,7 @@ const AddEmployee = (props) => {
     const handleEmailChange = (e) => {
         setEmail(e.target.value)
     }
-    
+
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -82,47 +77,52 @@ const AddEmployee = (props) => {
     }
     
     const handleClose = () => {
-        setOpen(false)
-        setName('')
-        setEmail('')
-        setPhone('')
-        setAddress('')
-        setBirthday('')
+        setOpen(false);
     };
 
-    const handleSubmit = () => {
+    const renewDetail = () => {
+        setPerson({
+            ...person,
+            name,
+            email,
+            address,
+            mobile: phone,
+            birthday,
+        })
+        setLoading(true)
+    }
+
+    const handleEdit = () => {
         const formData = {
             name,
             email,
+            address,
             mobile: phone,
             birthday,
-            address,
         }
 
         const config = {
-            method: 'post',
-            url: 'http://localhost:5000/users',
+            method: 'put',
+            url: `http://localhost:5000/users/${id}`,
             data: formData
         }
-
+        
         axios(config)
         .then((res) => {
-            console.log(res);
-            setLoading(true)
+            renewDetail()
             handleClose()
             openSnack()
         })
         .catch(err => {
-            setError(err)
-            console.log(error)
+            console.log(err)
         })
-
     }
-
-    return (
+    
+    
+    return(
         <>
-            <Button className={classes.fabButton} variant='contained' color='secondary' onClick={handleClickOpen}>
-                <Add />Add Employee
+            <Button variant='contained' onClick={handleClickOpen} style={{backgroundColor: 'orange'}}>
+                Edit
             </Button>
             <Dialog
                 open={open}
@@ -135,14 +135,22 @@ const AddEmployee = (props) => {
                 aria-labelledby="alert-dialog-slide-title"
                 aria-describedby="alert-dialog-slide-description"
             >
-                <DialogTitle id="alert-dialog-slide-title">{"Add New Employee"}</DialogTitle>
+                <DialogTitle id="alert-dialog-slide-title">{"Edit Employee"}</DialogTitle>
                 <DialogContent className={classes.margin}>
+                    <Grid container spacing={1} alignItems="flex-end">
+                        <Grid item xs={2}>
+                            <ContactMailRounded />
+                        </Grid>
+                        <Grid item xs={10}>
+                            <TextField name="id" label="Employee ID" value={id} disabled fullWidth/>
+                        </Grid>
+                    </Grid>
                     <Grid container spacing={1} alignItems="flex-end">
                         <Grid item xs={2}>
                             <FaceRounded />
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField required id="name" label="Name" value={name} onChange={(e) => handleNameChange(e)} fullWidth/>
+                            <TextField required name="name" label="Name" value={name} onChange={(e) => handleNameChange(e)} fullWidth/>
                         </Grid>
                     </Grid>
                     <Grid container spacing={1} alignItems="flex-end">
@@ -150,7 +158,7 @@ const AddEmployee = (props) => {
                             <AlternateEmailRounded />
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$' id="email" label="Email" value={email} onChange={(e) => handleEmailChange(e)} fullWidth/>
+                            <TextField pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$' name="email" label="Email" value={email} onChange={(e) => handleEmailChange(e)} fullWidth/>
                         </Grid>
                     </Grid>
                     <Grid container spacing={1} alignItems="flex-end">
@@ -158,7 +166,7 @@ const AddEmployee = (props) => {
                             <PhoneRounded />
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField pattern='^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$' id="phone" label="Phone Number" value={phone} onChange={(e) => handlePhoneChange(e)} fullWidth/>
+                            <TextField pattern='^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$' name="phone" label="Phone Number" value={phone} onChange={(e) => handlePhoneChange(e)} fullWidth/>
                         </Grid>
                     </Grid>
                     <Grid container spacing={1} alignItems="flex-end">
@@ -166,7 +174,7 @@ const AddEmployee = (props) => {
                             <CalendarTodayRounded />
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField pattern='' id="birthday" label="Birthday" value={birthday} onChange={(e) => handleBirthdayChange(e)} fullWidth/>
+                            <TextField pattern='' name="birthday" label="Birthday" value={birthday} onChange={(e) => handleBirthdayChange(e)} fullWidth/>
                         </Grid>
                     </Grid>
                     <Grid container spacing={1} alignItems="flex-end">
@@ -174,7 +182,7 @@ const AddEmployee = (props) => {
                             <HomeWorkRounded />
                         </Grid>
                         <Grid item xs={10}>
-                            <TextField id="address" label="Address" value={address} onChange={(e) => handleAddressChange(e)} fullWidth/>
+                            <TextField name="address" label="Address" value={address} onChange={(e) => handleAddressChange(e)} fullWidth/>
                         </Grid>
                     </Grid>
                 </DialogContent>
@@ -182,7 +190,7 @@ const AddEmployee = (props) => {
                     <Button variant='contained' onClick={handleClose} color="primary">
                         Cancel
                     </Button>
-                    <Button variant='contained' onClick={handleSubmit} color="primary">
+                    <Button variant='contained' onClick={handleEdit} color="primary">
                         Save
                     </Button>
                 </DialogActions>
@@ -192,12 +200,12 @@ const AddEmployee = (props) => {
                 onClose={closeSnack}
                 TransitionComponent={Transition}
                 anchorOrigin={{vertical:'top', horizontal:'center'}}
-                autoHideDuration={2000}
+                autoHideDuration={4000}
             >
-                <SnackbarContent message='New Contact Added Succesfully !' style={{ backgroundColor: 'green' }} />
+                <SnackbarContent message='Contact Edited Succesfully !' style={{ backgroundColor: 'green' }} />
             </Snackbar>
         </>
     )
 }
 
-export default AddEmployee
+export default EditEmployee
